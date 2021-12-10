@@ -3,22 +3,22 @@ from config import Config
 import urllib
 from models import Search
 
+
 class SearchAPI(object):
     def __init__(self, api):
         self._api = api
-    
+
     def search_items(self, term, **kwargs):
-        data = dict()
-        for field in ["item_types", "fields", "search_for_related_items", "exact_match", "include_fields", "start", "limit"]:
+        get_params = dict()
+        for field in ["item_types", "fields", "search_for_related_items", "exact_match", "include_fields", "start",
+                      "limit"]:
             if kwargs.get(field):
-                data[field] = kwargs.get(field)
-        url = "itemSearch?term=%s&%s" % (
-            term,
-            urllib.parse.urlencode(data)
-        )
-        search_result = Search(**self._api._get(url))
-        import pdb; pdb.set_trace()
+                get_params[field] = kwargs.get(field)
+        url = "/itemSearch"
+        get_params["term"]=term
+        search_result = Search(**self._api._get(url, get_params))
         return search_result.get_item(kwargs.get("item_types"))
+
 
 class API(object):
     def __init__(self, *args, **kwargs):
@@ -29,8 +29,10 @@ class API(object):
         Instances:
           .tickets:  the Ticket API
         """
-
-        self._api_prefix = "https://api.pipedrive.com/v1/{}&api_token=%s" % Config.PD_API_KEY
+        self.pd_key = dict(
+            api_token=Config.PD_API_KEY
+        )
+        self._api_prefix = "https://api.pipedrive.com/v1"
         self.headers = {'Content-Type': 'application/json'}
 
         self.search = SearchAPI(self)
@@ -86,11 +88,14 @@ class API(object):
         except HTTPError as e:
             raise FreshdeskError("{}: {}".format(e, j))
         """
+        #self.result = j
         return j
 
-    def _get(self, url, params={}):
+    def _get(self, url, params=None):
         """Wrapper around request.get() to use the API prefix. Returns a JSON response."""
-        req = requests.get(self._api_prefix + url, params=params)
+        if params is None:
+            params = {}
+        req = requests.get(self._api_prefix + url, params={**self.pd_key, **params})
         return self._action(req)
 
     def _post(self, url, data={}, **kwargs):
