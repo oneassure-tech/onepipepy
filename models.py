@@ -54,7 +54,7 @@ class Search(PDModel):
     def __repr__(self):
         return "Search Result Object"
 
-    def get_item(self, *args):
+    def get(self, *args):
         for i in self.data["items"]:
             if i["item"].get("type") in args[0]:
                 return globals()[i["item"]["type"].capitalize()](**i["item"])

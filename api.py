@@ -18,7 +18,7 @@ class SearchAPI(object):
         url = "/itemSearch"
         get_params["term"] = term
         search_result = Search(**self._api._get(url, get_params))
-        return search_result.get_item(kwargs.get("item_types"))
+        return search_result.get(kwargs.get("item_types"))
 
 
 class DealAPI(object):
