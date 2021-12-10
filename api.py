@@ -1,7 +1,8 @@
 import requests
 from config import Config
 import urllib
-from models import Search
+from models import *
+from errors import *
 
 
 class SearchAPI(object):
@@ -15,80 +16,60 @@ class SearchAPI(object):
             if kwargs.get(field):
                 get_params[field] = kwargs.get(field)
         url = "/itemSearch"
-        get_params["term"]=term
+        get_params["term"] = term
         search_result = Search(**self._api._get(url, get_params))
         return search_result.get_item(kwargs.get("item_types"))
 
 
+class DealAPI(object):
+    def __init__(self, api):
+        self._api = api
+        self.url = "/deals"
+
+    def add_deal(self, title, *args, **kwargs):
+        url = self.url
+        data = kwargs.get("data", dict())
+        data["title"] = title
+        return Deal(**self._api._post(url=url, data=data))
+
+    def update_deal(self, id, *args, **kwargs):
+        url = "/%s/%s" % (self.url, str(id))
+        return Deal(**self._api._put(url=url, data=kwargs.get("data")))
+
+    def get_deal_by_id(self, id, *args, **kwargs):
+        url = "/%s/%s" % (self.url, str(id))
+        return Deal(**self._api._get(url))
+
+
+class ActivitesAPI(object):
+    def __init__(self, api):
+        self._api = api
+        self.url = "/activites"
+
+    def add_activity(self, deal_id, **kwargs):
+        url = self.url
+        data = kwargs.get("data", dict())
+        data["deal_id"] = deal_id
+        return Activites(**self._api._post(url=url, data=data))
+
+
 class API(object):
     def __init__(self, *args, **kwargs):
-        """Creates a wrapper to perform API actions.
-        Arguments:
-          domain:    the Freshdesk domain (not custom). e.g. company.freshdesk.com
-          api_key:   the API key
-        Instances:
-          .tickets:  the Ticket API
-        """
         self.pd_key = dict(
-            api_token=Config.PD_API_KEY
+            api_token=args[0]
         )
         self._api_prefix = "https://api.pipedrive.com/v1"
         self.headers = {'Content-Type': 'application/json'}
 
         self.search = SearchAPI(self)
-        """
-        self.tickets = TicketAPI(self)
-        self.comments = CommentAPI(self)
-        self.contacts = ContactAPI(self)
-        self.companies = CompanyAPI(self)
-        self.groups = GroupAPI(self)
-        self.customers = CustomerAPI(self)
-        self.agents = AgentAPI(self)
-        self.roles = RoleAPI(self)
-        self.ticket_fields = TicketFieldAPI(self)
-        """
-        # if domain.find('freshdesk.com') < 0:
-        #     raise AttributeError('Freshdesk v2 API works only via Freshdesk'
-        #                          'domains and not via custom CNAMEs')
-        # self.domain = domain
+        self.deal = DealAPI(self)
+        self.activity = ActivitesAPI(self)
 
     def _action(self, req):
         try:
             j = req.json()
         except ValueError as e:
             j = {"error": str(e)}
-
-        """
-        error_message = 'PD Request Failed'
-        # To - Do : Map pd errors here
-        if 'errors' in j:
-            error_message = '{}: {}'.format(j.get('description'), j.get('errors'))
-        elif 'message' in j:
-            error_message = j['message']
-            
-        # To - Do : Create these error classes in errors.py
-        if req.status_code == 400:
-            raise FreshdeskBadRequest(error_message)
-        elif req.status_code == 401:
-            raise FreshdeskUnauthorized(error_message)
-        elif req.status_code == 403:
-            raise FreshdeskAccessDenied(error_message)
-        elif req.status_code == 404:
-            raise FreshdeskNotFound(error_message)
-        elif req.status_code == 429:
-            raise FreshdeskRateLimited(
-                '429 Rate Limit Exceeded: API rate-limit has been reached until {} seconds. See '
-                'http://freshdesk.com/api#ratelimit'.format(req.headers.get('Retry-After')))
-        elif 500 < req.status_code < 600:
-            raise FreshdeskServerError('{}: Server Error'.format(req.status_code))
-
-        # Catch any other errors
-        try:
-            req.raise_for_status()
-        except HTTPError as e:
-            raise FreshdeskError("{}: {}".format(e, j))
-        """
-        #self.result = j
         return j
 
     def _get(self, url, params=None):
@@ -100,15 +81,22 @@ class API(object):
 
     def _post(self, url, data={}, **kwargs):
         """Wrapper around request.post() to use the API prefix. Returns a JSON response."""
-        req = requests.post(self._api_prefix + url, data=data, **kwargs)
+        req = requests.post(
+            self._api_prefix + url + "?api_token=%s" % str(self.pd_key["api_token"]),
+            data=data,
+            **kwargs
+        )
         return self._action(req)
 
     def _put(self, url, data={}):
         """Wrapper around request.put() to use the API prefix. Returns a JSON response."""
-        req = requests.put(self._api_prefix + url, data=data)
+        req = requests.put(
+            self._api_prefix + url + "?api_token=%s" % str(self.pd_key["api_token"]),
+            data=data
+        )
         return self._action(req)
 
     def _delete(self, url):
         """Wrapper around request.delete() to use the API prefix. Returns a JSON response."""
-        req = requests.delete(self._api_prefix + url)
+        req = requests.delete(self._api_prefix + url + "?api_token=%s" % str(self.pd_key["api_token"]))
         return self._action(req)
