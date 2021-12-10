@@ -1,10 +1,11 @@
-
 class PDModel(object):
     _keys = None
 
     def __init__(self, **kwargs):
         self._keys = set()
-
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+            self._keys.add(k)
         """if "custom_field" in kwargs.keys() and len(kwargs["custom_field"]) > 0:
             custom_fields = kwargs.pop("custom_field")
             kwargs.update(custom_fields)
@@ -29,6 +30,7 @@ class Deal(PDModel):
     def __repr__(self):
         return '<DealTitle: \'{}\', DealID: \'{}\'>'.format(self.title, self.id)
 
+
 class Person(PDModel):
     def __str__(self):
         return self.name
@@ -36,14 +38,15 @@ class Person(PDModel):
     def __repr__(self):
         return '<PersonName: \'{}\', PersonID: \'{}\'>'.format(self.name, self.id)
 
+
 class Search(PDModel):
     def __str__(self):
         return "Search Result Object"
 
     def __repr__(self):
         return "Search Result Object"
-        
+
     def get_item(self, *args):
-        for item in self.data.items:
-            if item.item.type in args[0]:
-                return globals()[item.item.type.sentence()](**item.item)
+        for item in self.data["items"]:
+            if item["item"]["type"] in args[0]:
+                return globals()[item["item"]["type"].capitalize()](**item["item"])
