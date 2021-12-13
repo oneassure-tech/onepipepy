@@ -1,4 +1,0 @@
-class BadDealPostBody(Exception):
-    pass
-
-
