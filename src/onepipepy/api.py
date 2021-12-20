@@ -1,5 +1,5 @@
 import requests
-from models import *
+from .models import *
 
 
 class SearchAPI(object):
