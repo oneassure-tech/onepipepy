@@ -37,6 +37,43 @@ class DealAPI(object):
         url = "/%s/%s" % (self.url, str(id))
         return Deal(**self._api._get(url))
 
+    def add_deal_v2(self, title, *args, **kwargs):
+        url = self.url
+        data = kwargs.get("data", dict())
+        data["title"] = title
+
+        if kwargs.get("person") is not None:
+            try:
+                person_id = self._api.search.search_items(
+                    term=kwargs.get("person")["phone"],
+                    item_types="person",
+                    fields="phone"
+                ).id
+            except:
+                person_id = self._api.person.add_person(
+                    data=dict(
+                        name=kwargs.get("person")["name"],
+                        phone=kwargs.get("person")["phone"]
+                    )
+                ).data["id"]
+
+            data["person_id"] = person_id
+
+        if kwargs.get("org") is not None:
+            try:
+                org_id = self._api.search.search_items(
+                    term=kwargs.get("org")["name"],
+                    item_types="organization",
+                    fields="name"
+                ).id
+            except:
+                org_id = self._api.org.add_org(
+                    name=kwargs.get("org")["name"]
+                ).data["id"]
+            data["org_id"] = org_id
+
+        return Deal(**self._api._post(url=url, data=data))
+
 
 class ActivitesAPI(object):
     def __init__(self, api):
@@ -50,6 +87,29 @@ class ActivitesAPI(object):
         return Activites(**self._api._post(url=url, data=data))
 
 
+class PersonAPI(object):
+    def __init__(self, api):
+        self._api = api
+        self.url = "/persons"
+
+    def add_person(self, **kwargs):
+        url = self.url
+        data = kwargs.get("data", dict())
+        return Person(**self._api._post(url=url, data=data))
+
+
+class OrgAPI(object):
+    def __init__(self, api):
+        self._api = api
+        self.url = "/organizations"
+
+    def add_org(self, name, **kwargs):
+        url = self.url
+        data = kwargs.get("data", dict())
+        data["name"] = name
+        return Organization(**self._api._post(url=url, data=data))
+
+
 class API(object):
     def __init__(self, *args, **kwargs):
         self.pd_key = dict(
@@ -61,6 +121,8 @@ class API(object):
         self.search = SearchAPI(self)
         self.deal = DealAPI(self)
         self.activity = ActivitesAPI(self)
+        self.person = PersonAPI(self)
+        self.org = OrgAPI(self)
 
     def _action(self, req):
         try:
