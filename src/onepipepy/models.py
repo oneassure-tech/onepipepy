@@ -25,18 +25,26 @@ class PDModel(object):
 
 class Deal(PDModel):
     def __str__(self):
-        return self.title
+        return self.data["title"]
 
     def __repr__(self):
-        return '<DealTitle: \'{}\', DealID: \'{}\'>'.format(self.title, self.id)
+        return '<DealTitle: \'{}\', DealID: \'{}\'>'.format(self.data["title"], self.data["id"])
 
 
 class Person(PDModel):
     def __str__(self):
-        return self.name
+        return self.data["name"]
 
     def __repr__(self):
-        return '<PersonName: \'{}\', PersonID: \'{}\'>'.format(self.name, self.id)
+        return '<PersonName: \'{}\', PersonID: \'{}\'>'.format(self.data["name"], self.data["id"])
+
+
+class Organization(PDModel):
+    def __str__(self):
+        return self.data["name"]
+
+    def __repr__(self):
+        return '<OrgName: \'{}\', OrgID: \'{}\'>'.format(self.data["name"], self.data["id"])
 
 
 class Activites(PDModel):
