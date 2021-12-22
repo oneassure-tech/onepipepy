@@ -49,10 +49,10 @@ class Organization(PDModel):
 
 class Activites(PDModel):
     def __str__(self):
-        return self.subject
+        return self.data["subject"]
 
     def __repr__(self):
-        return '<Activity Subject: \'{}\', DealID: \'{}\'>'.format(self.subject, self.deal_id)
+        return '<Activity Subject: \'{}\', DealID: \'{}\'>'.format(self.data["subject"], self.data["deal_id"])
 
 
 class Search(PDModel):
@@ -63,6 +63,9 @@ class Search(PDModel):
         return "Search Result Object"
 
     def get(self, *args):
-        for i in self.data["items"]:
-            if i["item"].get("type") in args[0]:
-                return globals()[i["item"]["type"].capitalize()](**i["item"])
+        if self.data["items"]:
+            for i in self.data["items"]:
+                if i["item"].get("type") in args[0]:
+                    return globals()[i["item"]["type"].capitalize()](**{"data": i["item"]})
+        else:
+            return None
