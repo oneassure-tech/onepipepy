@@ -1,5 +1,6 @@
 import requests
 from .models import *
+from .errors import *
 
 
 class SearchAPI(object):
@@ -43,30 +44,31 @@ class DealAPI(object):
         data["title"] = title
 
         if kwargs.get("person") is not None:
-            try:
-                person_id = self._api.search.search_items(
-                    term=kwargs.get("person")["phone"],
-                    item_types="person",
-                    fields="phone"
-                ).id
-            except:
+            search_person = self._api.search.search_items(
+                term=kwargs.get("person")["phone"],
+                item_types="person",
+                fields="phone"
+            )
+            if search_person is not None:
+                person_id = search_person.data["id"]
+            else:
                 person_id = self._api.person.add_person(
                     data=dict(
                         name=kwargs.get("person")["name"],
                         phone=kwargs.get("person")["phone"]
                     )
                 ).data["id"]
-
             data["person_id"] = person_id
 
         if kwargs.get("org") is not None:
-            try:
-                org_id = self._api.search.search_items(
-                    term=kwargs.get("org")["name"],
-                    item_types="organization",
-                    fields="name"
-                ).id
-            except:
+            org_search = self._api.search.search_items(
+                term=kwargs.get("org")["name"],
+                item_types="organization",
+                fields="name"
+            )
+            if org_search is not None:
+                org_id = org_search.data["id"]
+            else:
                 org_id = self._api.org.add_org(
                     name=kwargs.get("org")["name"]
                 ).data["id"]
@@ -128,7 +130,45 @@ class API(object):
         try:
             j = req.json()
         except ValueError as e:
-            j = {"error": str(e)}
+            j = {"success": False, "error": str(e)}
+
+        error_message = 'PD Request Failed'
+        if j.get("success") and j.get("success") is False:
+            print(j)
+            error_message = '{}: {}'.format(j.get('error'), j.get('error_info'))
+
+        if req.status_code == 400:
+            raise PDBadRequest(error_message)
+        elif req.status_code == 401:
+            raise PDUnauthorized(error_message)
+        elif req.status_code == 403:
+            raise PDAccessDenied(error_message)
+        elif req.status_code == 404:
+            raise PDNotFound(error_message)
+        elif req.status_code == 405:
+            raise PDMethodNotAllowed(error_message)
+        elif req.status_code == 410:
+            raise PDGone(error_message)
+        elif req.status_code == 415:
+            raise PDUnsupportedMediaTypeError(error_message)
+        elif req.status_code == 422:
+            raise PDUnprocessableEntity(error_message)
+        elif req.status_code == 429:
+            raise PDRateLimited(
+                'API rate-limit has been reached wait until {} seconds. See \
+                https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting'.format(
+                    req.headers.get('x-ratelimit-reset')
+                )
+            )
+        elif 500 < req.status_code < 600:
+            raise PDServerError('{}: Server Error'.format(req.status_code))
+
+        # Catch any other errors
+        try:
+            req.raise_for_status()
+        except HTTPError as e:
+            raise PDError("{}: {}".format(e, j))
+
         return j
 
     def _get(self, url, params=None):
