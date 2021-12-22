@@ -1,4 +1,4 @@
-import requests
+from .utils import request_adapter
 from .models import *
 from .errors import *
 
@@ -117,6 +117,7 @@ class API(object):
         self.pd_key = dict(
             api_token=args[0]
         )
+
         self._api_prefix = "https://api.pipedrive.com/v1"
         self.headers = {'Content-Type': 'application/json'}
 
@@ -155,8 +156,8 @@ class API(object):
             raise PDUnprocessableEntity(error_message)
         elif req.status_code == 429:
             raise PDRateLimited(
-                'API rate-limit has been reached wait until {} seconds. See \
-                https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting'.format(
+                'API rate-limit has been reached wait until {} seconds. See '
+                'https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting'.format(
                     req.headers.get('x-ratelimit-reset')
                 )
             )
@@ -175,12 +176,12 @@ class API(object):
         """Wrapper around request.get() to use the API prefix. Returns a JSON response."""
         if params is None:
             params = {}
-        req = requests.get(self._api_prefix + url, params={**self.pd_key, **params})
+        req = request_adapter.get(self._api_prefix + url, params={**self.pd_key, **params})
         return self._action(req)
 
     def _post(self, url, data={}, **kwargs):
         """Wrapper around request.post() to use the API prefix. Returns a JSON response."""
-        req = requests.post(
+        req = request_adapter.post(
             self._api_prefix + url + "?api_token=%s" % str(self.pd_key["api_token"]),
             data=data,
             **kwargs
@@ -189,7 +190,7 @@ class API(object):
 
     def _put(self, url, data={}):
         """Wrapper around request.put() to use the API prefix. Returns a JSON response."""
-        req = requests.put(
+        req = request_adapter.put(
             self._api_prefix + url + "?api_token=%s" % str(self.pd_key["api_token"]),
             data=data
         )
@@ -197,5 +198,5 @@ class API(object):
 
     def _delete(self, url):
         """Wrapper around request.delete() to use the API prefix. Returns a JSON response."""
-        req = requests.delete(self._api_prefix + url + "?api_token=%s" % str(self.pd_key["api_token"]))
+        req = request_adapter.delete(self._api_prefix + url + "?api_token=%s" % str(self.pd_key["api_token"]))
         return self._action(req)
