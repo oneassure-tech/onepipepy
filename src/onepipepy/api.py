@@ -80,7 +80,7 @@ class DealAPI(object):
 class ActivitesAPI(object):
     def __init__(self, api):
         self._api = api
-        self.url = "/activites"
+        self.url = "/activities"
 
     def add_activity(self, deal_id, **kwargs):
         url = self.url
@@ -133,9 +133,9 @@ class API(object):
             j = {"success": False, "error": str(e)}
 
         error_message = 'PD Request Failed'
-        if j.get("success") and j.get("success") is False:
+        if j.get("success") is False:
             print(j)
-            error_message = '{}: {}'.format(j.get('error'), j.get('error_info'))
+            error_message = '{}: {}'.format(j.get('error', error_message), j.get('error_info', 'Info not available'))
 
         if req.status_code == 400:
             raise PDBadRequest(error_message)
