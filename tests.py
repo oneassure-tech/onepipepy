@@ -96,8 +96,7 @@ class PDTest(unittest.TestCase):
                 deal_id=self.vars["deal_id"],
                 data=dict(
                     subject="Test activity",
-                    due_data=datetime.today().strftime('%Y-%m-%d'),
-                    due_time=""
+                    due_date=datetime.today().strftime('%Y-%m-%d'),
                 )
             ),
             Activites
