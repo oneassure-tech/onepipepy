@@ -44,30 +44,31 @@ class DealAPI(object):
         data["title"] = title
 
         if kwargs.get("person") is not None:
-            try:
-                person_id = self._api.search.search_items(
-                    term=kwargs.get("person")["phone"],
-                    item_types="person",
-                    fields="phone"
-                ).id
-            except:
+            search_person = self._api.search.search_items(
+                term=kwargs.get("person")["phone"],
+                item_types="person",
+                fields="phone"
+            )
+            if search_person is not None:
+                person_id = search_person.data["id"]
+            else:
                 person_id = self._api.person.add_person(
                     data=dict(
                         name=kwargs.get("person")["name"],
                         phone=kwargs.get("person")["phone"]
                     )
                 ).data["id"]
-
             data["person_id"] = person_id
 
         if kwargs.get("org") is not None:
-            try:
-                org_id = self._api.search.search_items(
-                    term=kwargs.get("org")["name"],
-                    item_types="organization",
-                    fields="name"
-                ).id
-            except:
+            org_search = self._api.search.search_items(
+                term=kwargs.get("org")["name"],
+                item_types="organization",
+                fields="name"
+            )
+            if org_search is not None:
+                org_id = org_search.data["id"]
+            else:
                 org_id = self._api.org.add_org(
                     name=kwargs.get("org")["name"]
                 ).data["id"]
