@@ -53,10 +53,7 @@ class DealAPI(object):
                 person_id = search_person.data["id"]
             else:
                 person_id = self._api.person.add_person(
-                    data=dict(
-                        name=kwargs.get("person")["name"],
-                        phone=kwargs.get("person")["phone"]
-                    )
+                    data=kwargs.get("person")
                 ).data["id"]
             data["person_id"] = person_id
 
@@ -70,7 +67,7 @@ class DealAPI(object):
                 org_id = org_search.data["id"]
             else:
                 org_id = self._api.org.add_org(
-                    name=kwargs.get("org")["name"]
+                    name=kwargs.get("org")
                 ).data["id"]
             data["org_id"] = org_id
 
