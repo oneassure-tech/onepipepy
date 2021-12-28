@@ -51,3 +51,7 @@ class PDMethodNotAllowed(PDError):
 
 class BadDealPostBody(Exception):
     pass
+
+
+class UnAuthorizedWebhook(Exception):
+    pass
