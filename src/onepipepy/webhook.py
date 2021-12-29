@@ -5,27 +5,26 @@ from .models import *
 class Added(object):
     def __init__(self, webhook):
         self.webhook = webhook
-        self.obj = self.webhook.event_obj[1]
-        current = self.webhook.json_data.get("current", dict())
-        setattr(self, self.obj, globals()[self.obj](**current))
+        setattr(
+            self,
+            self.webhook.obj,
+            self.webhook.json_data.get("current", dict())
+        )
 
 
 class Updated(object):
     def __init__(self, webhook):
         self.webhook = webhook
-        self.obj = self.webhook.event_obj[1]
-        current = self.webhook.json_data.get("current", dict())
-        previous = self.webhook.json_data.get("previous", dict())
-        for key in current.keys():
-            if current.get(key, None) != previous.get(key, None):
+        self.current = self.webhook.json_data.get("current", dict())
+        self.previous = self.webhook.json_data.get("previous", dict())
+        for key in self.current.keys():
+            if self.current.get(key, None) != self.previous.get(key, None):
                 self.change = dict(
                     key=key,
-                    current_value=current[key],
-                    previous_value=previous[key]
+                    current_value=self.current[key],
+                    previous_value=self.previous[key]
                 )
                 break
-        setattr(self, "current_" + self.obj, globals()[self.obj](**current))
-        setattr(self, "previous_" + self.obj, globals()[self.obj](**previous))
 
 
 class Merged(object):
@@ -47,8 +46,9 @@ class Webhook(object):
             self.auth()
         self.request = args[0]
         self.json_data = self.request.get_json(force=True)
-        self.event_obj = self.json_data["event"].split(".")
-        setattr(self, self.event_obj[0], globals()[self.event_obj[0]](self))
+        self.event = self.json_data["event"].split(".")[0].lower()
+        self.obj = self.json_data["event"].split(".")[1].lower()
+        setattr(self, self.event, globals()[self.event.capitalize()](self))
 
     def auth(self):
         auth = self.request.authorization
