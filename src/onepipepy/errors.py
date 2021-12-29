@@ -55,3 +55,4 @@ class BadDealPostBody(Exception):
 
 class UnAuthorizedWebhook(Exception):
     pass
+

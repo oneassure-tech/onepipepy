@@ -40,11 +40,11 @@ class Deleted(object):
 class Webhook(object):
     def __init__(self, *args, **kwargs):
         webhook_auth = kwargs.get("webhook_auth", None)
+        self.request = args[0]
         if webhook_auth is not None:
             self.username = webhook_auth.get("username")
             self.password = webhook_auth.get("password")
             self.auth()
-        self.request = args[0]
         self.json_data = self.request.get_json(force=True)
         self.event = self.json_data["event"].split(".")[0].lower()
         self.obj = self.json_data["event"].split(".")[1].lower()
