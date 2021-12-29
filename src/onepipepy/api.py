@@ -31,47 +31,12 @@ class DealAPI(object):
         return Deal(**self._api._post(url=url, data=data))
 
     def update_deal(self, id, *args, **kwargs):
-        url = "/%s/%s" % (self.url, str(id))
+        url = "%s/%s" % (self.url, str(id))
         return Deal(**self._api._put(url=url, data=kwargs.get("data")))
 
     def get_deal_by_id(self, id, *args, **kwargs):
-        url = "/%s/%s" % (self.url, str(id))
+        url = "%s/%s" % (self.url, str(id))
         return Deal(**self._api._get(url))
-
-    def add_deal_v2(self, title, *args, **kwargs):
-        url = self.url
-        data = kwargs.get("data", dict())
-        data["title"] = title
-
-        if kwargs.get("person") is not None:
-            search_person = self._api.search.search_items(
-                term=kwargs.get("person")["phone"],
-                item_types="person",
-                fields="phone"
-            )
-            if search_person is not None:
-                person_id = search_person.data["id"]
-            else:
-                person_id = self._api.person.add_person(
-                    data=kwargs.get("person")
-                ).data["id"]
-            data["person_id"] = person_id
-
-        if kwargs.get("org") is not None:
-            org_search = self._api.search.search_items(
-                term=kwargs.get("org")["name"],
-                item_types="organization",
-                fields="name"
-            )
-            if org_search is not None:
-                org_id = org_search.data["id"]
-            else:
-                org_id = self._api.org.add_org(
-                    name=kwargs.get("org")
-                ).data["id"]
-            data["org_id"] = org_id
-
-        return Deal(**self._api._post(url=url, data=data))
 
 
 class ActivitesAPI(object):
@@ -96,6 +61,14 @@ class PersonAPI(object):
         data = kwargs.get("data", dict())
         return Person(**self._api._post(url=url, data=data))
 
+    def update_person(self, id, *args, **kwargs):
+        url = "%s/%s" % (self.url, str(id))
+        return Person(**self._api._put(url=url, data=kwargs.get("data")))
+
+    def get_person_by_id(self, id, *args, **kwargs):
+        url = "%s/%s" % (self.url, str(id))
+        return Person(**self._api._get(url))
+
 
 class OrgAPI(object):
     def __init__(self, api):
@@ -107,6 +80,10 @@ class OrgAPI(object):
         data = kwargs.get("data", dict())
         data["name"] = name
         return Organization(**self._api._post(url=url, data=data))
+
+    def update_org(self, id, *args, **kwargs):
+        url = "%s/%s" % (self.url, str(id))
+        return Organization(**self._api._put(url=url, data=kwargs.get("data")))
 
 
 class API(object):
