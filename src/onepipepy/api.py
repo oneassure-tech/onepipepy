@@ -70,6 +70,19 @@ class PersonAPI(object):
         return Person(**self._api._get(url))
 
 
+class NotesAPI(object):
+    def __init__(self, api):
+        self._api = api
+        self.url = "/notes"
+
+    def add_note(self, deal_id, content, **kwargs):
+        url = self.url
+        data = kwargs.get("data", dict())
+        data["deal_id"] = deal_id
+        data["content"] = content
+        return Notes(**self._api._post(url=url, data=data))
+
+
 class OrgAPI(object):
     def __init__(self, api):
         self._api = api

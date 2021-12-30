@@ -55,6 +55,14 @@ class Activites(PDModel):
         return '<Activity Subject: \'{}\', DealID: \'{}\'>'.format(self.data["subject"], self.data["deal_id"])
 
 
+class Notes(PDModel):
+    def __str__(self):
+        return self.data["deal_id"]
+
+    def __repr__(self):
+        return '<Deal_ID: \'{}\', Content: \'{}\'>'.format(self.data["deal_id"], self.data["content"])
+
+
 class Search(PDModel):
     def __str__(self):
         return "Search Result Object"
