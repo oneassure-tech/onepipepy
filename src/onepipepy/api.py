@@ -113,6 +113,7 @@ class API(object):
         self.activity = ActivitesAPI(self)
         self.person = PersonAPI(self)
         self.org = OrgAPI(self)
+        self.notes = NotesAPI(self)
 
     def _action(self, req):
         try:

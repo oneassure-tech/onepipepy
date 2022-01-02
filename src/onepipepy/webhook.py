@@ -17,14 +17,18 @@ class Updated(object):
         self.webhook = webhook
         self.current = self.webhook.json_data.get("current", dict())
         self.previous = self.webhook.json_data.get("previous", dict())
+        self.change = list()
         for key in self.current.keys():
-            if self.current.get(key, None) != self.previous.get(key, None):
-                self.change = dict(
-                    key=key,
-                    current_value=self.current[key],
-                    previous_value=self.previous[key]
+            current_value = self.current.get(key, None)
+            previous_value = self.previous.get(key, None)
+            if current_value != previous_value and current_value is not None:
+                self.change.append(
+                    dict(
+                        key=key,
+                        current_value=current_value,
+                        previous_value=previous_value
+                    )
                 )
-                break
 
 
 class Merged(object):
@@ -48,6 +52,7 @@ class Webhook(object):
         self.json_data = self.request.get_json(force=True)
         self.event = self.json_data["event"].split(".")[0].lower()
         self.obj = self.json_data["event"].split(".")[1].lower()
+        self.obj_id = self.json_data["current"]["id"]
         setattr(self, self.event, globals()[self.event.capitalize()](self))
 
     def auth(self):
