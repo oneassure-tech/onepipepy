@@ -49,9 +49,6 @@ class Webhook(object):
             self.username = webhook_auth.get("username")
             self.password = webhook_auth.get("password")
             self.auth()
-        try:
-            self.json_data = self.request.get_json(force=True)
-        except:
             self.json_data = self.request.get("json_data")
         self.event = self.json_data["event"].split(".")[0].lower()
         self.obj = self.json_data["event"].split(".")[1].lower()
@@ -59,12 +56,9 @@ class Webhook(object):
         setattr(self, self.event, globals()[self.event.capitalize()](self))
 
     def auth(self):
-        try:
-            auth = self.request.authorization
-        except:
-            auth = self.request.get("auth")
-        if auth is None:
+        _auth = self.request.get("auth", None)
+        if _auth is None:
             raise UnAuthorizedWebhook
-        if auth["username"] != self.username and auth["password"] != self.password:
+        if _auth["username"] != self.username and _auth["password"] != self.password:
             raise UnAuthorizedWebhook
 
