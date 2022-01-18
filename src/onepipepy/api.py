@@ -71,7 +71,8 @@ class PersonAPI(object):
 
     def delete_by_id(self, id, *args, **kwargs):
         url = "%s/%s" % (self.url, str(id))
-        return Person(**self._api._delete(url))
+        self._api._delete(url)
+        print(f"Deleted Person ID: {id}")
 
 
 class NotesAPI(object):
