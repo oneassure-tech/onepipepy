@@ -69,6 +69,10 @@ class PersonAPI(object):
         url = "%s/%s" % (self.url, str(id))
         return Person(**self._api._get(url))
 
+    def delete_by_id(self, id, *args, **kwargs):
+        url = "%s/%s" % (self.url, str(id))
+        return Person(**self._api._delete(url))
+
 
 class NotesAPI(object):
     def __init__(self, api):
